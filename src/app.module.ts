@@ -1,10 +1,7 @@
 // ** Nest Imports
 import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule } from '@nestjs/schedule';
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 
 // ** Custom Module Imports
 import { CoreModule } from './module/core.module';
@@ -17,27 +14,12 @@ import { TypeOrmExModule } from './global/repository/typeorm-ex.module';
 import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 
-// ** Redis Imports
-import { RedisModule } from '@liaoliaots/nestjs-redis';
-
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [`.env.${process.env.NODE_ENV}`],
     }),
-    RedisModule.forRoot({
-      readyLog: true,
-      config: {
-        host: process.env.REDIS_HOST,
-        port: +process.env.REDIS_PORT,
-      },
-    }),
-    CacheModule.register({
-      isGlobal: true,
-    }),
-    ScheduleModule.forRoot(),
-    EventEmitterModule.forRoot(),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
         type: 'mysql',
@@ -85,15 +67,7 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
     LoggerService,
     {
       provide: APP_INTERCEPTOR,
-      useClass: CacheInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
-    },
-    {
-      provide: APP_PIPE,
-      useClass: ValidationPipe,
     },
   ],
 })

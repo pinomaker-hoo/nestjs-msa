@@ -12,17 +12,9 @@ import swaggerConfig from './global/config/swagger/swaggerConfig';
 // ** Logger Config Imports
 import LoggerService from './global/util/logger/logger.service';
 
-// ** Security Imports
-import csurf from 'csurf';
-import helmet from 'helmet';
-
 // ** Express Imports
 import * as express from 'express';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { CustomExceptionFilter } from './global/filter/CustomExceptionFilter';
-
-// ** Interceptor Imports
-import { LoggingInterceptor } from './global/interceptor/LoggingInterceptor';
 
 // ** Typeorm Imports
 import { initializeTransactionalContext } from 'typeorm-transactional';
@@ -49,21 +41,17 @@ async function bootstrap() {
   // ** Logger
   app.useLogger(app.get(LoggerService));
 
-  // ** Interceptor
-  app.useGlobalInterceptors(new LoggingInterceptor());
-
-  // ** Filter
-  app.useGlobalFilters(new CustomExceptionFilter());
-
   // ** Pipeline
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   // ** Security
   app.enableCors();
-  if (process.env.NODE_ENV === 'production') {
-    app.use(csurf());
-    app.use(helmet());
-  }
 
   // ** Static Handler
   app.use('/file', express.static('./uploads'));

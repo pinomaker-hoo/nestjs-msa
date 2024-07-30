@@ -1,33 +1,91 @@
 version: '3'
 services:
-  # nest-app:
+  # auth:
   #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
+  #     context: ./apps/auth-server
+  #   ports:
+  #     - 8280:8280
+  #   networks:
+  #     - dice-networks
+  #   depends_on:
+  #     - redis
+  #     - db-master
+  #     - db-slave
+  #     - redis-cache
+  #     - rabbitmq
+
+  # core:
+  #   build:
+  #     context: ./apps/core-server
   #   ports:
   #     - 8080:8080
-  #   volumes:
-  #     - .:/app
+  #   networks:
+  #     - dice-networks
   #   depends_on:
-  #     - mysql-db
-  mysql-db:
-    image: mysql:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: qwer1595
-      MYSQL_DATABASE: nest-test
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: qwer1595
-    ports:
-      - 3306:3306
-    volumes:
-      - mysql-data:/var/lib/mysql
+  #     - redis
+  #     - db-master
+  #     - db-slave
+  #     - redis-cache
+  #     - rabbitmq
 
-  redis:
-    image: redis:latest
+  # log:
+  #   build:
+  #     context: ./apps/log-server
+  #   ports:
+  #     - 8180:8180
+  #   networks:
+  #     - dice-networks
+  #   depends_on:
+  #     - redis
+  #     - db-master
+  #     - db-slave
+  #     - redis-cache
+  #     - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:management
     ports:
-      - 6379:6379
+      - 5672:5672
+      - 15050:15672
+
+  db:
+    image: mysql:8.0
+    restart: always
+    networks:
+      - dice-networks
+    ports:
+      - '3306:3306'
+    volumes:
+      - my-db-master:/var/lib/mysql
+      - my-db-master:/var/lib/mysql-files
+      - ./config/master.cnf:/etc/mysql/my.cnf
     environment:
-      - TZ=Asia/Seoul
+      MYSQL_DATABASE: core
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: qwer1595@!
+      MYSQL_ROOT_PASSWORD: qwer1595@!
+    command: --default-time-zone=Asia/Seoul
+
+  # nginx:
+  #   image: nginx
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #   networks:
+  #     - dice-networks
+  #   volumes:
+  #     - ./config/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./html:/usr/share/nginx/html
+  #     - ./ssl_dice:/usr/share/nginx/secret
+  #     - /etc/letsencrypt/live/hi-dice.com:/etc/letsencrypt/live/hi-dice.com
+  #     - /etc/letsencrypt/archive/hi-dice.com:/etc/letsencrypt/archive/hi-dice.com
+  #   depends_on:
+  #     - core
+  #     - file
+  #     - log
 
 volumes:
-  mysql-data:
+  my-db-master:
+
+networks:
+  dice-networks:
