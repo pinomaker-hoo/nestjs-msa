@@ -1,7 +1,6 @@
 // ** Nest Imports
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
-import { join } from 'path';
 
 // ** Custom Module Imports
 import { AppModule } from './app.module';
@@ -13,7 +12,6 @@ import swaggerConfig from './global/config/swagger/swaggerConfig';
 import LoggerService from './global/util/logger/logger.service';
 
 // ** Express Imports
-import * as express from 'express';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 // ** Typeorm Imports
@@ -52,12 +50,6 @@ async function bootstrap() {
 
   // ** Security
   app.enableCors();
-
-  // ** Static Handler
-  app.use('/file', express.static('./uploads'));
-  app.useStaticAssets(join(__dirname, '..', 'public'));
-  app.setBaseViewsDir(join(__dirname, '..', 'src/views'));
-  app.setViewEngine('hbs');
 
   // ** Swagger Setting
   if (process.env.NODE_ENV === 'development') {
